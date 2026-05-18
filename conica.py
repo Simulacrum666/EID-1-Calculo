@@ -66,10 +66,10 @@ class Conica:
                 return "Elipse"
 
             if not mismo_signo:
-                return "Hipérbola"
+                return "Hiperbola"
 
         if self.A == 0 or self.B == 0:
-            return "Parábola"
+            return "Parabola"
 
         return "Degenerada"
 
