@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from factory import crear_conica_desde_rut
 from utils import sin_manual, cos_manual, PI
-import math
+
 
 
 # =========================================================
