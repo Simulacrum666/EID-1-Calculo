@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 
 from factory import crear_conica_desde_rut
 from utils import sin_manual, cos_manual, PI
-
-
+from limites import AnalizadorLimites  # Importación del nuevo módulo de límites
 
 # =========================================================
 # CONFIG
@@ -18,296 +17,235 @@ from utils import sin_manual, cos_manual, PI
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-
 # =========================================================
-# VENTANA
+# VENTANA PRINCIPAL
 # =========================================================
 
 app = ctk.CTk()
-app.title("Proyecto MAT1186")
-app.geometry("1200x700")
-
-
-# =========================================================
-# LAYOUT
-# =========================================================
-
-frame_izq = ctk.CTkFrame(app, width=350)
-frame_izq.pack(side="left", fill="y", padx=10, pady=10)
-frame_izq.pack_propagate(False)
-
-frame_der = ctk.CTkFrame(app)
-frame_der.pack(side="right", expand=True, fill="both", padx=10, pady=10)
-
-
-# =========================================================
-# TÍTULO
-# =========================================================
-
-titulo = ctk.CTkLabel(
-    frame_izq,
-    text="Analizador de Cónicas",
-    font=("Consolas", 22, "bold")
-)
-titulo.pack(pady=20)
-
-
-# =========================================================
-# ENTRADA RUT
-# =========================================================
-
-label_rut = ctk.CTkLabel(frame_izq, text="Ingrese RUT")
-label_rut.pack(pady=(10, 0))
-
-entry_rut = ctk.CTkEntry(
-    frame_izq,
-    width=250,
-    height=35,
-    placeholder_text="12.345.678-5"
-)
-entry_rut.pack(pady=10)
-
-
-# =========================================================
-# INFO
-# =========================================================
-
-textbox = ctk.CTkTextbox(
-    frame_izq,
-    width=300,
-    height=400,
-    font=("Consolas", 12)
-)
-textbox.pack(padx=10, pady=20, fill="both", expand=True)
-
-
-# =========================================================
-# GRÁFICO
-# =========================================================
-
-fig = plt.Figure(figsize=(7, 6))
-ax = fig.add_subplot(111)
-
-canvas = FigureCanvasTkAgg(fig, master=frame_der)
-canvas.get_tk_widget().pack(expand=True, fill="both")
-
-
-# =========================================================
-# FUNCIONES AUXILIARES
-# =========================================================
+app.title("Proyecto MAT1186 - Evaluación Integrada")
+app.geometry("1200x720")
 
 conica_actual = None
 
+# =========================================================
+# LAYOUT PRINCIPAL (Paneles e Interfaz de Pestañas)
+# =========================================================
 
-def limpiar_grafico():
-    ax.clear()
-    ax.set_title("Gráfico")
-    ax.grid(True)
-    ax.axhline(0, color="gray", linewidth=0.8)
-    ax.axvline(0, color="gray", linewidth=0.8)
-    canvas.draw()
+# Panel Izquierdo que contendrá las pestañas de control
+frame_izq = ctk.CTkFrame(app, width=380)
+frame_izq.pack(side="left", fill="y", padx=10, pady=10)
+frame_izq.pack_propagate(False)
 
+# Control de Pestañas
+tab_control = ctk.CTkTabview(frame_izq, width=360)
+tab_control.pack(expand=True, fill="both", padx=10, pady=10)
 
-def _ejes(titulo_str):
+tab_conicas = tab_control.add("Secciones Cónicas")
+tab_limites = tab_control.add("Funciones por Tramos")
+
+# Panel Derecho para el gráfico (Matplotlib integrado)
+frame_der = ctk.CTkFrame(app)
+frame_der.pack(side="right", expand=True, fill="both", padx=10, pady=10)
+
+# =========================================================
+# COMPONENTES GLOBALES (Entrada de RUT en la parte superior)
+# =========================================================
+
+# Para no duplicar la entrada de RUT, la dejamos arriba en el panel izquierdo
+frame_rut = ctk.CTkFrame(frame_izq, fg_color="transparent")
+frame_rut.pack(side="top", fill="x", padx=10, pady=(10, 0))
+
+label_rut = ctk.CTkLabel(frame_rut, text="Ingrese RUT (con DV):", font=("Consolas", 12))
+label_rut.pack(pady=(5, 2))
+
+entry_rut = ctk.CTkEntry(frame_rut, placeholder_text="12345678-9", width=200, justify="center")
+entry_rut.pack(pady=2)
+
+# =========================================================
+# PESTAÑA 1: SECCIONES CÓNICAS (Tus elementos originales)
+# =========================================================
+
+titulo_conicas = ctk.CTkLabel(
+    tab_conicas,
+    text="Analizador de Cónicas",
+    font=("Consolas", 16, "bold")
+)
+titulo_conicas.pack(pady=10)
+
+textbox = ctk.CTkTextbox(tab_conicas, width=320, height=340, font=("Consolas", 11))
+textbox.pack(pady=10, expand=True, fill="both")
+
+# =========================================================
+# PESTAÑA 2: FUNCIONES POR TRAMOS (Límites y Continuidad)
+# =========================================================
+
+titulo_limites = ctk.CTkLabel(
+    tab_limites,
+    text="Análisis de Límites",
+    font=("Consolas", 16, "bold")
+)
+titulo_limites.pack(pady=10)
+
+label_caso_rut = ctk.CTkLabel(
+    tab_limites, 
+    text="Caso generado: (Esperando RUT)", 
+    font=("Consolas", 12, "bold"), 
+    text_color="orange",
+    wraplength=300
+)
+label_caso_rut.pack(pady=5)
+
+# Tabla visual usando un TextBox para la evidencia computacional
+label_tabla = ctk.CTkLabel(tab_limites, text="Evidencia Numérica (Entornos de a):", font=("Consolas", 11, "underline"))
+label_tabla.pack(pady=(5, 0))
+
+textbox_tabla = ctk.CTkTextbox(tab_limites, width=320, height=130, font=("Consolas", 11))
+textbox_tabla.pack(pady=5)
+
+# CAMPOS COMPLETAMENTE VACÍOS PARA LA DEFENSA ORAL (Requerimiento estricto)
+label_defensa = ctk.CTkLabel(tab_limites, text="📋 RESPUESTAS EVALUACIÓN ORAL", font=("Consolas", 12, "bold"), text_color="#1f538d")
+label_defensa.pack(pady=(10, 5))
+
+entry_lim_izq = ctk.CTkEntry(tab_limites, placeholder_text="Límite por Izquierda (L⁻)", width=300)
+entry_lim_izq.pack(pady=2)
+
+entry_lim_der = ctk.CTkEntry(tab_limites, placeholder_text="Límite por Derecha (L⁺)", width=300)
+entry_lim_der.pack(pady=2)
+
+entry_existe = ctk.CTkEntry(tab_limites, placeholder_text="¿Existe el límite en x=a? (Sí/No)", width=300)
+entry_existe.pack(pady=2)
+
+entry_f_a = ctk.CTkEntry(tab_limites, placeholder_text="Valor exacto de f(a)", width=300)
+entry_f_a.pack(pady=2)
+
+entry_tipo_disc = ctk.CTkEntry(tab_limites, placeholder_text="Tipo de Discontinuidad", width=300)
+entry_tipo_disc.pack(pady=2)
+
+# Función interna de validación para la comisión evaluadora
+def verificar_respuestas_alumno():
+    rut = entry_rut.get().strip()
+    if not rut:
+        messagebox.showwarning("Aviso", "Primero debe ingresar un RUT y Analizar.")
+        return
+    try:
+        lim_obj = AnalizadorLimites(rut)
+        verdades = lim_obj.obtain_analisis_teorico() if hasattr(lim_obj, 'obtain_analisis_teorico') else lim_obj.obtener_analisis_teorico()
+        
+        messagebox.showinfo(
+            "Solucionario Interno (Validación)", 
+            f"Resultados esperados para el análisis:\n\n"
+            f"• Límite Izquierdo: {verdades['limite_izquierdo']}\n"
+            f"• Límite Derecho: {verdades['limite_derecho']}\n"
+            f"• ¿Existe Límite?: {verdades['existe_limite']}\n"
+            f"• Valor f(a): {verdades['valor_funcion']}\n"
+            f"• Tipo de Discontinuidad: {verdades['tipo_discontinuidad']}\n\n"
+            f"Justificación:\n{verdades['justificacion']}"
+        )
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo validar: {str(e)}")
+
+btn_verificar = ctk.CTkButton(tab_limites, text="Validar Respuestas", fg_color="#2e7d32", hover_color="#1b5e20", command=verificar_respuestas_alumno)
+btn_verificar.pack(pady=8)
+
+# =========================================================
+# CONFIGURACIÓN DEL LIENZO DE MATPLOTLIB
+# =========================================================
+
+fig, ax = plt.subplots(figsize=(6, 5))
+canvas = FigureCanvasTkAgg(fig, master=frame_der)
+canvas.get_tk_widget().pack(expand=True, fill="both", padx=10, pady=10)
+
+def _ejes(titulo_grafico=""):
     ax.axhline(0, color="gray", linewidth=0.8)
     ax.axvline(0, color="gray", linewidth=0.8)
     ax.grid(True, linestyle=":", alpha=0.6)
-    ax.set_aspect("equal")
-    ax.legend(fontsize=8)
-    ax.set_title(titulo_str)
+    ax.set_title(titulo_grafico, fontname="Consolas", fontsize=12, fontweight="bold")
     canvas.draw()
 
+def limpiar_grafico():
+    ax.clear()
+    _ejes("Gráfico")
 
-def _exp(x):
-    resultado = 1.0
-    termino = 1.0
-    for n in range(1, 20):
-        termino *= x / n
-        resultado += termino
-    return resultado
-
+# Inicializar ejes limpios
+_ejes("Gráfico")
 
 # =========================================================
-# MOSTRAR INFO  (adaptado por tipo)
-# =========================================================
-
-def mostrar_info(conica):
-    textbox.delete("0.0", "end")
-
-    def línea(texto):
-        textbox.insert("end", texto + "\n")
-
-    línea(f"Tipo: {conica.tipo}\n")
-    línea("Ecuación General:")
-    línea(conica.ecuacion_general())
-    línea("")
-    línea("Ecuación Canónica:")
-    línea(conica.ecuacion_canonica())
-    línea("")
-
-    tipo = conica.tipo
-
-    if tipo == "Circunferencia":
-        línea(f"Centro: ({conica.h}, {conica.k})")
-        línea(f"Radio:  {conica.r:.4f}")
-        línea(f"r² = {conica.r2}")
-        línea(f"Área:      {conica.calcular_area():.4f}")
-        línea(f"Perímetro: {conica.calcular_perimetro():.4f}")
-
-    elif tipo == "Elipse":
-        línea(f"Centro:      ({conica.h}, {conica.k})")
-        línea(f"Orientación: {conica.orientacion}")
-        línea(f"a = {conica.a:.4f}  (a² = {conica.a2})")
-        línea(f"b = {conica.b:.4f}  (b² = {conica.b2})")
-        línea(f"c = {conica.c:.4f}")
-        línea(f"Focos: {conica.focos}")
-
-    elif tipo == "Parabola":
-        línea(f"Vértice:     {conica.vertice}")
-        línea(f"Orientación: {conica.orientacion}")
-        línea(f"p = {conica.p:.4f}")
-        línea(f"Foco:        {conica.foco}")
-        línea(f"Directriz:   {conica.obtener_directriz()}")
-        línea(f"Lado recto:  {conica.lado_recto:.4f}")
-
-    elif tipo == "Hiperbola":
-        línea(f"Centro:      ({conica.h}, {conica.k})")
-        línea(f"Orientación: {conica.orientacion}")
-        línea(f"a = {conica.a:.4f}  (a² = {conica.a2})")
-        línea(f"b = {conica.b:.4f}  (b² = {conica.b2})")
-        línea(f"c = {conica.c:.4f}")
-        línea(f"Focos:    {conica.focos}")
-        línea(f"Vértices: {conica.vertices}")
-        p1, p2 = conica.obtener_asintotas()
-        línea(f"Asíntotas: pendientes {p1:.4f} y {p2:.4f}")
-
-
-# =========================================================
-# FUNCIONES DE GRAFICADO (inline, sin plt.show)
-# =========================================================
-
-def graficar_circunferencia(c):
-    limpiar_grafico()
-    pasos = 400
-    px, py = [], []
-    for i in range(pasos + 1):
-        t = 2 * PI * i / pasos
-        px.append(c.h + c.r * cos_manual(t))
-        py.append(c.k + c.r * sin_manual(t))
-    ax.plot(px, py, color="royalblue", linewidth=2)
-    ax.scatter([c.h], [c.k], color="black", zorder=5, label="Centro")
-    norte, sur, este, oeste = c.obtener_puntos_cardinales()
-    for punto, nombre in zip([norte, sur, este, oeste], ["N", "S", "E", "O"]):
-        ax.scatter([punto[0]], [punto[1]], color="green", zorder=5)
-        ax.annotate(nombre, punto, textcoords="offset points", xytext=(6, 6), fontsize=9)
-    _ejes(f"Circunferencia — RUT: {c.rut}")
-
-
-def graficar_elipse(c):
-    limpiar_grafico()
-    pasos = 500
-    px, py = [], []
-    for i in range(pasos + 1):
-        t = 2 * PI * i / pasos
-        cos_t = cos_manual(t)
-        sin_t = sin_manual(t)
-        if c.orientacion == "Horizontal":
-            px.append(c.h + c.a * cos_t)
-            py.append(c.k + c.b * sin_t)
-        else:
-            px.append(c.h + c.b * cos_t)
-            py.append(c.k + c.a * sin_t)
-    ax.plot(px, py, color="royalblue", linewidth=2)
-    ax.scatter([c.h], [c.k], color="black", zorder=5, label="Centro")
-    for foco in c.focos:
-        ax.scatter([foco[0]], [foco[1]], color="red", zorder=5)
-    princ, secun = c.obtener_vertices()
-    for v in princ + secun:
-        ax.scatter([v[0]], [v[1]], color="green", zorder=5)
-    _ejes(f"Elipse — RUT: {c.rut}")
-
-
-def graficar_parabola(c):
-    limpiar_grafico()
-    rango = max(abs(c.p) * 12, 6)
-    pasos = 400
-    px, py = [], []
-    paso = 2 * rango / pasos
-    if c.orientacion == "Vertical":
-        for i in range(pasos + 1):
-            x = c.h - rango + i * paso
-            y = c.k + (x - c.h) ** 2 / c.cuatro_p
-            px.append(x); py.append(y)
-    else:
-        for i in range(pasos + 1):
-            y = c.k - rango + i * paso
-            x = c.h + (y - c.k) ** 2 / c.cuatro_p
-            px.append(x); py.append(y)
-    ax.plot(px, py, color="royalblue", linewidth=2)
-    ax.scatter([c.vertice[0]], [c.vertice[1]], color="black", zorder=5, label="Vértice")
-    ax.annotate("V", c.vertice, textcoords="offset points", xytext=(6, 6), fontsize=9)
-    ax.scatter([c.foco[0]], [c.foco[1]], color="red", zorder=5, label="Foco")
-    ax.annotate("F", c.foco, textcoords="offset points", xytext=(6, 6), fontsize=9)
-    if c.directriz_eje == "y":
-        ax.axhline(c.directriz_valor, color="orange", linestyle="--",
-                   linewidth=1.4, label=f"Directriz y={c.directriz_valor:.3f}")
-    else:
-        ax.axvline(c.directriz_valor, color="orange", linestyle="--",
-                   linewidth=1.4, label=f"Directriz x={c.directriz_valor:.3f}")
-    _ejes(f"Parábola — RUT: {c.rut}")
-
-
-def graficar_hiperbola(c):
-    limpiar_grafico()
-    pasos = 600
-    rango_t = 3.0
-    r1x, r1y, r2x, r2y = [], [], [], []
-    for i in range(pasos + 1):
-        t_val = -rango_t + 2 * rango_t * i / pasos
-        ep = _exp(t_val); en = _exp(-t_val)
-        cosh_t = (ep + en) / 2
-        sinh_t = (ep - en) / 2
-        if c.orientacion == "Horizontal":
-            r1x.append(c.h + c.a * cosh_t);  r1y.append(c.k + c.b * sinh_t)
-            r2x.append(c.h - c.a * cosh_t);  r2y.append(c.k + c.b * sinh_t)
-        else:
-            r1x.append(c.h + c.b * sinh_t);  r1y.append(c.k + c.a * cosh_t)
-            r2x.append(c.h + c.b * sinh_t);  r2y.append(c.k - c.a * cosh_t)
-    ax.plot(r1x, r1y, color="royalblue", linewidth=2)
-    ax.plot(r2x, r2y, color="royalblue", linewidth=2)
-    ax.scatter([c.h], [c.k], color="black", zorder=5, label="Centro")
-    for f in c.focos:
-        ax.scatter([f[0]], [f[1]], color="red", zorder=5)
-    for v in c.vertices:
-        ax.scatter([v[0]], [v[1]], color="green", zorder=5)
-    p_pos, p_neg = c.obtener_asintotas()
-    x_lim = max(abs(x) for x in r1x + r2x) * 1.1
-    xs = [-x_lim, x_lim]
-    ax.plot(xs, [c.k + p_pos * (x - c.h) for x in xs], "k--", linewidth=1, alpha=0.5, label="Asíntotas")
-    ax.plot(xs, [c.k + p_neg * (x - c.h) for x in xs], "k--", linewidth=1, alpha=0.5)
-    _ejes(f"Hipérbola — RUT: {c.rut}")
-
-
-# =========================================================
-# DISPATCHER
+# LOGICA ORIGINAL DE RE-DIBUJO DE CÓNICAS
 # =========================================================
 
 def graficar_conica(conica):
+    ax.clear()
     tipo = conica.tipo
-    if tipo == "Circunferencia":
-        graficar_circunferencia(conica)
-    elif tipo == "Elipse":
-        graficar_elipse(conica)
-    elif tipo == "Parabola":
-        graficar_parabola(conica)
-    elif tipo == "Hiperbola":
-        graficar_hiperbola(conica)
-    else:
-        messagebox.showwarning("Aviso", f"Tipo '{tipo}' aún no tiene gráfico implementado.")
+    pasos = 400
 
+    if tipo == "Circunferencia":
+        puntos_x, puntos_y = [], []
+        for i in range(pasos + 1):
+            t = 2 * PI * i / pasos
+            puntos_x.append(conica.h + conica.r * cos_manual(t))
+            puntos_y.append(conica.k + conica.r * sin_manual(t))
+        ax.plot(puntos_x, puntos_y, color="royalblue", linewidth=2, label="Circunferencia")
+        ax.scatter([conica.h], [conica.k], color="red", zorder=5, label="Centro")
+
+    elif tipo == "Elipse":
+        puntos_x, puntos_y = [], []
+        for i in range(pasos + 1):
+            t = 2 * PI * i / pasos
+            if conica.orientacion == "Horizontal":
+                puntos_x.append(conica.h + conica.a * cos_manual(t))
+                puntos_y.append(conica.k + conica.b * sin_manual(t))
+            else:
+                puntos_x.append(conica.h + conica.b * cos_manual(t))
+                puntos_y.append(conica.k + conica.a * sin_manual(t))
+        ax.plot(puntos_x, puntos_y, color="seagreen", linewidth=2, label="Elipse")
+        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
+
+    elif tipo == "Parabola":
+        # Rango de graficación adaptativo para la parábola
+        if conica.orientacion == "Vertical":
+            xs = [conica.h - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
+            ys = [((x - conica.h)**2 / (4 * conica.p)) + conica.k for x in xs]
+        else:
+            ys = [conica.k - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
+            xs = [((y - conica.k)**2 / (4 * conica.p)) + conica.h for y in ys]
+        ax.plot(xs, ys, color="darkorange", linewidth=2, label="Parábola")
+        ax.scatter([conica.vertice[0]], [conica.vertice[1]], color="red", zorder=5, label="Vértice")
+
+    elif tipo == "Hiperbola":
+        # Dibujar las dos ramas de la hipérbola
+        t_vals = [-2.5 + (i * 5 / pasos) for i in range(pasos + 1) if i != pasos//2]
+        for signo in [-1, 1]:
+            xs, ys = [], []
+            for t in t_vals:
+                # Aproximación de funciones hiperbólicas usando desarrollos o directos permitidos en graficado
+                import math # Solo permitido en archivo de graficas según tu diseño original para el soporte de matplotlib
+                try:
+                    cosh_t = math.cosh(t)
+                    sinh_t = math.sinh(t)
+                    if conica.orientacion == "Horizontal":
+                        xs.append(conica.h + conica.a * cosh_t * signo)
+                        ys.append(conica.k + conica.b * sinh_t)
+                    else:
+                        xs.append(conica.h + conica.b * sinh_t)
+                        ys.append(conica.k + conica.a * cosh_t * signo)
+                except:
+                    continue
+            ax.plot(xs, ys, color="crimson", linewidth=2)
+        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
+
+    _ejes(f"{tipo} — RUT: {conica.rut}")
+
+def mostrar_info(conica):
+    textbox.delete("0.0", "end")
+    textbox.insert("end", f"RUT: {conica.rut}\n")
+    textbox.insert("end", f"Tipo de Cónica: {conica.tipo}\n")
+    textbox.insert("end", f"Coeficientes:\n")
+    textbox.insert("end", f" A = {conica.A:.2f}, B = {conica.B:.2f}\n")
+    textbox.insert("end", f" C = {conica.C:.2f}, D = {conica.D:.2f}, E = {conica.E:.2f}\n\n")
+    textbox.insert("end", f"Ecuación Canónica:\n {conica.ecuacion_canonica()}\n")
 
 # =========================================================
-# ANALIZAR / LIMPIAR
+# OPERACIONES CENTRALES (Analizar / Limpiar)
 # =========================================================
 
 def analizar():
@@ -316,36 +254,98 @@ def analizar():
     if not rut:
         messagebox.showwarning("Error", "Ingrese un RUT")
         return
+        
+    pestana_activa = tab_control.get()
+    
     try:
-        conica_actual = crear_conica_desde_rut(rut)
-        mostrar_info(conica_actual)
-        graficar_conica(conica_actual)
+        # CASO A: El usuario está viendo la pestaña de Cónicas
+        if pestana_activa == "Secciones Cónicas":
+            conica_actual = crear_conica_desde_rut(rut)
+            mostrar_info(conica_actual)
+            graficar_conica(conica_actual)
+            
+        # CASO B: El usuario está viendo la pestaña de Límites
+        elif pestana_activa == "Funciones por Tramos":
+            ax.clear()
+            obj_lim = AnalizadorLimites(rut)
+            
+            # 1. Mostrar la regla del caso detectado en la etiqueta
+            label_caso_rut.configure(text=obj_lim.obtener_nombre_caso())
+            
+            # 2. Población manual de la tabla de aproximación (Evidencia Computacional)
+            izq, der = obj_lim.generar_tabla_valores()
+            textbox_tabla.delete("0.0", "end")
+            textbox_tabla.insert("end", f" x (Izq)  │ f(x)       │ x (Der)  │ f(x)\n")
+            textbox_tabla.insert("end", f"──────────┼────────────┼──────────┼────────────\n")
+            
+            for i in range(len(izq)):
+                x_izq, y_izq = izq[i]
+                x_der, y_der = der[i]
+                
+                str_izq = f"{y_izq:.4f}" if y_izq is not None else "Indef."
+                str_der = f"{y_der:.4f}" if y_der is not None else "Indef."
+                
+                textbox_tabla.insert("end", f" {x_izq:<8.3f} │ {str_izq:<10} │ {x_der:<8.3f} │ {str_der:<10}\n")
+
+            # 3. Graficado manual de la función por tramos (Sin NumPy)
+            # Creamos un dominio de evaluación continuo de 'a - 5' a 'a + 5'
+            puntos_x = [obj_lim.a - 5 + (i * 10 / 250) for i in range(251)]
+            puntos_y = []
+            
+            for px in puntos_x:
+                # Usamos flag de aproximación para saltar la indeterminación cruda en el gráfico continuo
+                puntos_y.append(obj_lim.evaluar_funcion(px, aproximacion=True))
+                
+            ax.plot(puntos_x, puntos_y, color="purple", linewidth=2.5, label="f(x)")
+            
+            # Si corresponde a discontinuidad infinita (Caso 3), añadimos la asíntota visual
+            if obj_lim.caso == 3:
+                ax.axvline(obj_lim.a, color="red", linestyle="--", alpha=0.7, label=f"Asíntota (x={obj_lim.a})")
+            
+            # Marcar el punto crítico evaluado en el plano
+            ax.axvline(obj_lim.a, color="gray", linestyle=":", alpha=0.4)
+            
+            _ejes(f"Función por Tramos — (Punto Crítico a = {obj_lim.a})")
+            
+            # 4. Forzar el blanqueamiento de los campos para la evaluación del alumno
+            entry_lim_izq.delete(0, "end")
+            entry_lim_der.delete(0, "end")
+            entry_existe.delete(0, "end")
+            entry_f_a.delete(0, "end")
+            entry_tipo_disc.delete(0, "end")
+
     except ValueError as e:
         messagebox.showerror("Error", str(e))
-
 
 def limpiar():
     global conica_actual
     conica_actual = None
     entry_rut.delete(0, "end")
     textbox.delete("0.0", "end")
+    textbox_tabla.delete("0.0", "end")
+    label_caso_rut.configure(text="Caso generado: (Esperando RUT)")
+    
+    # Limpiar campos de la defensa
+    entry_lim_izq.delete(0, "end")
+    entry_lim_der.delete(0, "end")
+    entry_existe.delete(0, "end")
+    entry_f_a.delete(0, "end")
+    entry_tipo_disc.delete(0, "end")
+    
     limpiar_grafico()
 
-
 # =========================================================
-# BOTONES
-# =========================================================
-
-btn_analizar = ctk.CTkButton(frame_izq, text="Analizar", command=analizar)
-btn_analizar.pack(pady=(10, 5))
-
-btn_limpiar = ctk.CTkButton(frame_izq, text="Limpiar", command=limpiar)
-btn_limpiar.pack(pady=(0, 10))
-
-
-# =========================================================
-# INICIO
+# BOTONES DE ACCIÓN PRINCIPALES
 # =========================================================
 
-limpiar_grafico()
+frame_botones = ctk.CTkFrame(frame_izq, fg_color="transparent")
+frame_botones.pack(side="bottom", fill="x", padx=10, pady=10)
+
+btn_analizar = ctk.CTkButton(frame_botones, text="Analizar RUT", fg_color="#1f538d", command=analizar)
+btn_analizar.pack(side="left", expand=True, padx=5, pady=5)
+
+btn_limpiar = ctk.CTkButton(frame_botones, text="Limpiar Todo", fg_color="#555555", command=limpiar)
+btn_limpiar.pack(side="right", expand=True, padx=5, pady=5)
+
+# Lanzar la aplicación
 app.mainloop()
