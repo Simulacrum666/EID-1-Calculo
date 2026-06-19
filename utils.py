@@ -56,6 +56,11 @@ def extraer_digitos(rut: str):
     cuerpo = rut_limpio[:-1]
     dv = rut_limpio[-1]
 
+    #Algunos RUT reales tienen solo 7 dígitos en el cuerpo (ej. 1.234.567-4).
+    #Se rellena con ceros a la izquierda para que siempre existan d1...d8,
+    #tal como lo define el enunciado (d1d2d3d4d5d6d7d8 - DV).
+    cuerpo = cuerpo.zfill(8)
+
     digitos = [int(x) for x in cuerpo[:8]]
 
     return digitos, dv
