@@ -29,7 +29,9 @@ class Parabola(Conica):
             self.cuatro_p = -self.D / self.A
             self.p = self.cuatro_p / 4
             
-            self.k = -termino_independiente / self.D if self.D != 0 else 0
+            #Despejando y: D*y = -A*(x-h)² + (A*h² - E)  →  y = (A*h² - E)/D - (A/D)*(x-h)²
+            #Por lo tanto k = (A*h² - E)/D = termino_independiente / D (sin signo extra)
+            self.k = termino_independiente / self.D if self.D != 0 else 0
             
             #Vértice y Foco
             self.vertice = (self.h, self.k)
@@ -52,7 +54,8 @@ class Parabola(Conica):
             self.cuatro_p = -self.C / self.B
             self.p = self.cuatro_p / 4
             
-            self.h = -termino_independiente / self.C if self.C != 0 else 0
+            #Misma derivación que en el caso vertical, intercambiando x↔y: h = termino_independiente / C
+            self.h = termino_independiente / self.C if self.C != 0 else 0
             
             #Vértice y Foco
             self.vertice = (self.h, self.k)
