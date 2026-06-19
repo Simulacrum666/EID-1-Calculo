@@ -173,6 +173,15 @@ _ejes("Gráfico")
 # LOGICA ORIGINAL DE RE-DIBUJO DE CÓNICAS
 # =========================================================
 
+def _exp_manual(x):
+    """e^x aproximado con serie de Taylor (20 términos), sin usar la librería math."""
+    resultado = 1.0
+    termino = 1.0
+    for n in range(1, 20):
+        termino *= x / n
+        resultado += termino
+    return resultado
+
 def graficar_conica(conica):
     ax.clear()
     tipo = conica.tipo
@@ -217,19 +226,18 @@ def graficar_conica(conica):
         for signo in [-1, 1]:
             xs, ys = [], []
             for t in t_vals:
-                # Aproximación de funciones hiperbólicas usando desarrollos o directos permitidos en graficado
-                import math # Solo permitido en archivo de graficas según tu diseño original para el soporte de matplotlib
-                try:
-                    cosh_t = math.cosh(t)
-                    sinh_t = math.sinh(t)
-                    if conica.orientacion == "Horizontal":
-                        xs.append(conica.h + conica.a * cosh_t * signo)
-                        ys.append(conica.k + conica.b * sinh_t)
-                    else:
-                        xs.append(conica.h + conica.b * sinh_t)
-                        ys.append(conica.k + conica.a * cosh_t * signo)
-                except:
-                    continue
+                # cosh(t) y sinh(t) calculados manualmente a partir de e^t y e^-t
+                # (sin usar la librería math, igual que en graficas.py)
+                e_pos = _exp_manual(t)
+                e_neg = _exp_manual(-t)
+                cosh_t = (e_pos + e_neg) / 2
+                sinh_t = (e_pos - e_neg) / 2
+                if conica.orientacion == "Horizontal":
+                    xs.append(conica.h + conica.a * cosh_t * signo)
+                    ys.append(conica.k + conica.b * sinh_t)
+                else:
+                    xs.append(conica.h + conica.b * sinh_t)
+                    ys.append(conica.k + conica.a * cosh_t * signo)
             ax.plot(xs, ys, color="crimson", linewidth=2)
         ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
 
