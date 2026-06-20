@@ -76,9 +76,9 @@ class Conica:
     def ecuacion_general(self):
 
         return (
-            f"{self.A}x² + "
-            f"{self.B}y² + "
-            f"{self.C}x + "
-            f"{self.D}y + "
-            f"{self.E} = 0"
+            f"{self.A:.2f}x² + "
+            f"{self.B:.2f}y² + "
+            f"{self.C:.2f}x + "
+            f"{self.D:.2f}y + "
+            f"{self.E:.2f} = 0"
         )

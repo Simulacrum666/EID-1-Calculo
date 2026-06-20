@@ -180,11 +180,21 @@ def graficar_conica(conica):
 
 def mostrar_info(conica):
     textbox.delete("0.0", "end")
-    textbox.insert("end", f"RUT: {conica.rut}\n")
+    textbox.insert("end", f"RUT: {conica.rut}\n\n")
+
+    textbox.insert("end", "── Validación del RUT (Módulo 11) ──\n")
+    for paso in conica.pasos_validacion:
+        textbox.insert("end", f" {paso}\n")
+    textbox.insert("end", "\n")
+
     textbox.insert("end", f"Tipo de Cónica: {conica.tipo}\n")
     textbox.insert("end", f"Coeficientes:\n")
     textbox.insert("end", f" A = {conica.A:.2f}, B = {conica.B:.2f}\n")
     textbox.insert("end", f" C = {conica.C:.2f}, D = {conica.D:.2f}, E = {conica.E:.2f}\n\n")
+
+    textbox.insert("end", "Ecuación General:\n")
+    textbox.insert("end", f" {conica.ecuacion_general()}\n\n")
+
     textbox.insert("end", f"Ecuación Canónica:\n {conica.ecuacion_canonica()}\n")
 
 # =========================================================
