@@ -29,6 +29,14 @@ class Elipse(Conica):
         self.a2 = rhs / self.A
         self.b2 = rhs / self.B
 
+        #Igual que en Circunferencia: si a² o b² da negativo, la ecuación
+        #no tiene solución real (elipse imaginaria), no se puede graficar.
+        if self.a2 < 0 or self.b2 < 0:
+            raise ValueError(
+                "La ecuación representa una elipse imaginaria "
+                f"(a² = {self.a2}, b² = {self.b2}, sin solución real)."
+            )
+
         self.a = sqrt_manual(self.a2)
         self.b = sqrt_manual(self.b2)
 
