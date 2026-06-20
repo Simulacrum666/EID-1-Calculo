@@ -7,8 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
 from factory import crear_conica_desde_rut
-from utils import sin_manual, cos_manual, PI
 from limites import AnalizadorLimites  # Importación del nuevo módulo de límites
+from graficador import dibujar_conica  # Lógica de dibujo de cónicas, separada de la GUI
 
 # =========================================================
 # CONFIG
@@ -129,7 +129,7 @@ def verificar_respuestas_alumno():
         return
     try:
         lim_obj = AnalizadorLimites(rut)
-        verdades = lim_obj.obtain_analisis_teorico() if hasattr(lim_obj, 'obtain_analisis_teorico') else lim_obj.obtener_analisis_teorico()
+        verdades = lim_obj.obtener_analisis_teorico()
         
         messagebox.showinfo(
             "Solucionario Interno (Validación)", 
@@ -170,78 +170,13 @@ def limpiar_grafico():
 _ejes("Gráfico")
 
 # =========================================================
-# LOGICA ORIGINAL DE RE-DIBUJO DE CÓNICAS
+# GRAFICADO DE CÓNICAS (la lógica de dibujo vive en graficador.py)
 # =========================================================
-
-def _exp_manual(x):
-    """e^x aproximado con serie de Taylor (20 términos), sin usar la librería math."""
-    resultado = 1.0
-    termino = 1.0
-    for n in range(1, 20):
-        termino *= x / n
-        resultado += termino
-    return resultado
 
 def graficar_conica(conica):
     ax.clear()
-    tipo = conica.tipo
-    pasos = 400
-
-    if tipo == "Circunferencia":
-        puntos_x, puntos_y = [], []
-        for i in range(pasos + 1):
-            t = 2 * PI * i / pasos
-            puntos_x.append(conica.h + conica.r * cos_manual(t))
-            puntos_y.append(conica.k + conica.r * sin_manual(t))
-        ax.plot(puntos_x, puntos_y, color="royalblue", linewidth=2, label="Circunferencia")
-        ax.scatter([conica.h], [conica.k], color="red", zorder=5, label="Centro")
-
-    elif tipo == "Elipse":
-        puntos_x, puntos_y = [], []
-        for i in range(pasos + 1):
-            t = 2 * PI * i / pasos
-            if conica.orientacion == "Horizontal":
-                puntos_x.append(conica.h + conica.a * cos_manual(t))
-                puntos_y.append(conica.k + conica.b * sin_manual(t))
-            else:
-                puntos_x.append(conica.h + conica.b * cos_manual(t))
-                puntos_y.append(conica.k + conica.a * sin_manual(t))
-        ax.plot(puntos_x, puntos_y, color="seagreen", linewidth=2, label="Elipse")
-        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
-
-    elif tipo == "Parabola":
-        # Rango de graficación adaptativo para la parábola
-        if conica.orientacion == "Vertical":
-            xs = [conica.h - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
-            ys = [((x - conica.h)**2 / (4 * conica.p)) + conica.k for x in xs]
-        else:
-            ys = [conica.k - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
-            xs = [((y - conica.k)**2 / (4 * conica.p)) + conica.h for y in ys]
-        ax.plot(xs, ys, color="darkorange", linewidth=2, label="Parábola")
-        ax.scatter([conica.vertice[0]], [conica.vertice[1]], color="red", zorder=5, label="Vértice")
-
-    elif tipo == "Hiperbola":
-        # Dibujar las dos ramas de la hipérbola
-        t_vals = [-2.5 + (i * 5 / pasos) for i in range(pasos + 1) if i != pasos//2]
-        for signo in [-1, 1]:
-            xs, ys = [], []
-            for t in t_vals:
-                # cosh(t) y sinh(t) calculados manualmente a partir de e^t y e^-t
-                # (sin usar la librería math, igual que en graficas.py)
-                e_pos = _exp_manual(t)
-                e_neg = _exp_manual(-t)
-                cosh_t = (e_pos + e_neg) / 2
-                sinh_t = (e_pos - e_neg) / 2
-                if conica.orientacion == "Horizontal":
-                    xs.append(conica.h + conica.a * cosh_t * signo)
-                    ys.append(conica.k + conica.b * sinh_t)
-                else:
-                    xs.append(conica.h + conica.b * sinh_t)
-                    ys.append(conica.k + conica.a * cosh_t * signo)
-            ax.plot(xs, ys, color="crimson", linewidth=2)
-        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
-
-    _ejes(f"{tipo} — RUT: {conica.rut}")
+    dibujar_conica(ax, conica)
+    _ejes(f"{conica.tipo} — RUT: {conica.rut}")
 
 def mostrar_info(conica):
     textbox.delete("0.0", "end")
