@@ -178,6 +178,9 @@ def graficar_conica(conica):
     dibujar_conica(ax, conica)
     _ejes(f"{conica.tipo} — RUT: {conica.rut}")
 
+# =========================================================
+# FUNCIÓN MODIFICADA: mostrar_info (Punto 1 implementado)
+# =========================================================
 def mostrar_info(conica):
     textbox.delete("0.0", "end")
     textbox.insert("end", f"RUT: {conica.rut}\n\n")
@@ -187,13 +190,22 @@ def mostrar_info(conica):
         textbox.insert("end", f" {paso}\n")
     textbox.insert("end", "\n")
 
+    # === NUEVO: Inserción de los Pasos de Construcción de Coeficientes ===
+    if hasattr(conica, 'pasos_construccion'):
+        for paso in conica.pasos_construccion:
+            textbox.insert("end", f"{paso}\n")
+        textbox.insert("end", "\n")
+
     textbox.insert("end", f"Tipo de Cónica: {conica.tipo}\n")
-    textbox.insert("end", f"Coeficientes:\n")
+    textbox.insert("end", f"Coeficientes Finales:\n")
     textbox.insert("end", f" A = {conica.A:.2f}, B = {conica.B:.2f}\n")
     textbox.insert("end", f" C = {conica.C:.2f}, D = {conica.D:.2f}, E = {conica.E:.2f}\n\n")
 
     textbox.insert("end", "Ecuación General:\n")
-    textbox.insert("end", f" {conica.ecuacion_general()}\n\n")
+    try:
+        textbox.insert("end", f" {conica.ecuacion_general()}\n\n")
+    except AttributeError:
+        textbox.insert("end", f" {conica.A:.2f}x² + {conica.B:.2f}y² + {conica.C:.2f}x + {conica.D:.2f}y + {conica.E:.2f} = 0\n\n")
 
     textbox.insert("end", f"Ecuación Canónica:\n {conica.ecuacion_canonica()}\n")
 
@@ -241,21 +253,17 @@ def analizar():
                 textbox_tabla.insert("end", f" {x_izq:<8.3f} │ {str_izq:<10} │ {x_der:<8.3f} │ {str_der:<10}\n")
 
             # 3. Graficado manual de la función por tramos (Sin NumPy)
-            # Creamos un dominio de evaluación continuo de 'a - 5' a 'a + 5'
             puntos_x = [obj_lim.a - 5 + (i * 10 / 250) for i in range(251)]
             puntos_y = []
             
             for px in puntos_x:
-                # Usamos flag de aproximación para saltar la indeterminación cruda en el gráfico continuo
                 puntos_y.append(obj_lim.evaluar_funcion(px, aproximacion=True))
                 
             ax.plot(puntos_x, puntos_y, color="purple", linewidth=2.5, label="f(x)")
             
-            # Si corresponde a discontinuidad infinita (Caso 3), añadimos la asíntota visual
             if obj_lim.caso == 3:
                 ax.axvline(obj_lim.a, color="red", linestyle="--", alpha=0.7, label=f"Asíntota (x={obj_lim.a})")
             
-            # Marcar el punto crítico evaluado en el plano
             ax.axvline(obj_lim.a, color="gray", linestyle=":", alpha=0.4)
             
             _ejes(f"Función por Tramos — (Punto Crítico a = {obj_lim.a})")
@@ -299,6 +307,15 @@ btn_analizar.pack(side="left", expand=True, padx=5, pady=5)
 
 btn_limpiar = ctk.CTkButton(frame_botones, text="Limpiar Todo", fg_color="#555555", command=limpiar)
 btn_limpiar.pack(side="right", expand=True, padx=5, pady=5)
+
+
+def cerrar_aplicacion():
+    # Destruye la ventana de manera segura y detiene los hilos/tareas pendientes
+    app.quit()
+    app.destroy()
+
+# Indicarle a CustomTkinter que use nuestra función al presionar la 'X' de cerrar
+app.protocol("WM_DELETE_WINDOW", cerrar_aplicacion)
 
 # Lanzar la aplicación
 app.mainloop()
