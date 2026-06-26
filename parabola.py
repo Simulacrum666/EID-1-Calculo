@@ -72,16 +72,17 @@ class Parabola(Conica):
         self.lado_recto = self.cuatro_p if self.cuatro_p >= 0 else -self.cuatro_p
 
     def ecuacion_canonica(self):
-        signo_h = f"- {abs(self.h)}" if self.h >= 0 else f"+ {abs(self.h)}"
-        signo_k = f"- {abs(self.k)}" if self.k >= 0 else f"+ {abs(self.k)}"
+        signo_h = f"- {abs(self.h):.2f}" if self.h >= 0 else f"+ {abs(self.h):.2f}"
+        signo_k = f"- {abs(self.k):.2f}" if self.k >= 0 else f"+ {abs(self.k):.2f}"
         
         parte_x = "x" if self.h == 0 else f"(x {signo_h})"
         parte_y = "y" if self.k == 0 else f"(y {signo_k})"
-
+        
         if self.orientacion == "Vertical":
-            return f"{parte_x}² = {self.cuatro_p} * {parte_y}"
+            # Eleva al cuadrado la parte de X y redondea 4p
+            parte_x_cuad = "x²" if self.h == 0 else f"(x {signo_h})²"
+            return f"{parte_x_cuad} = {self.cuatro_p:.2f} * {parte_y}"
         else:
-            return f"{parte_y}² = {self.cuatro_p} * {parte_x}"
-
-    def obtener_directriz(self):
-        return f"{self.directriz_eje} = {self.directriz_valor}"
+            # Eleva al cuadrado la parte de Y y redondea 4p
+            parte_y_cuad = "y²" if self.k == 0 else f"(y {signo_k})²"
+            return f"{parte_y_cuad} = {self.cuatro_p:.2f} * {parte_x}"

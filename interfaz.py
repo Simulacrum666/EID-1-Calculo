@@ -153,11 +153,12 @@ label_caso_rut.pack(pady=5)
 label_tabla = ctk.CTkLabel(tab_limites, text="Evidencia Numérica (Entornos de a):", font=("Consolas", 11, "underline"))
 label_tabla.pack(pady=(5, 0))
 
-textbox_tabla = ctk.CTkTextbox(tab_limites, width=320, height=120, font=("Consolas", 11))
+# Se redujo ligeramente la altura de la tabla para dar espacio holgado a los 7 campos
+textbox_tabla = ctk.CTkTextbox(tab_limites, width=320, height=90, font=("Consolas", 11))
 textbox_tabla.pack(pady=5)
 
 label_defensa = ctk.CTkLabel(tab_limites, text="📋 RESPUESTAS EVALUACIÓN ORAL", font=("Consolas", 12, "bold"), text_color="#1f538d")
-label_defensa.pack(pady=(10, 5))
+label_defensa.pack(pady=(5, 2))
 
 entry_lim_izq = ctk.CTkEntry(tab_limites, placeholder_text="Límite por Izquierda (L⁻)", width=300)
 entry_lim_izq.pack(pady=2)
@@ -173,6 +174,14 @@ entry_f_a.pack(pady=2)
 
 entry_tipo_disc = ctk.CTkEntry(tab_limites, placeholder_text="Tipo de Discontinuidad", width=300)
 entry_tipo_disc.pack(pady=2)
+
+# --- NUEVOS CAMPOS ADICIONALES (Punto 3 completado) ---
+entry_continua = ctk.CTkEntry(tab_limites, placeholder_text="¿Es continua en x=a? (Sí/No)", width=300)
+entry_continua.pack(pady=2)
+
+entry_justificacion = ctk.CTkEntry(tab_limites, placeholder_text="Justificación escrita corta", width=300)
+entry_justificacion.pack(pady=2)
+
 
 def verificar_respuestas_alumno():
     rut = entry_rut.get().strip()
@@ -190,14 +199,15 @@ def verificar_respuestas_alumno():
             f"• Límite Derecho: {verdades['limite_derecho']}\n"
             f"• ¿Existe Límite?: {verdades['existe_limite']}\n"
             f"• Valor f(a): {verdades['valor_funcion']}\n"
-            f"• Tipo de Discontinuidad: {verdades['tipo_discontinuidad']}\n\n"
+            f"• Tipo de Discontinuidad: {verdades['tipo_discontinuidad']}\n"
+            f"• ¿Es Continua?: {verdades.get('es_continua', 'No')}\n\n"
             f"Justificación:\n{verdades['justificacion']}"
         )
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo validar: {str(e)}")
 
 btn_verificar = ctk.CTkButton(tab_limites, text="Validar Límites", fg_color="#2e7d32", hover_color="#1b5e20", command=verificar_respuestas_alumno)
-btn_verificar.pack(pady=8)
+btn_verificar.pack(pady=6)
 
 # =========================================================
 # CONFIGURACIÓN DEL LIENZO DE MATPLOTLIB
@@ -347,11 +357,14 @@ def analizar():
             ax.axvline(obj_lim.a, color="gray", linestyle=":", alpha=0.4)
             _ejes(f"Función por Tramos — (Punto Crítico a = {obj_lim.a})")
             
+            # Blanqueamiento de los 7 campos de la evaluación de límites
             entry_lim_izq.delete(0, "end")
             entry_lim_der.delete(0, "end")
             entry_existe.delete(0, "end")
             entry_f_a.delete(0, "end")
             entry_tipo_disc.delete(0, "end")
+            entry_continua.delete(0, "end")
+            entry_justificacion.delete(0, "end")
 
     except ValueError as e:
         messagebox.showerror("Error", str(e))
@@ -371,12 +384,14 @@ def limpiar():
     entry_eje_mayor.delete(0, "end")
     entry_eje_menor.delete(0, "end")
     
-    # Limpiar campos de límites
+    # Limpiar campos de límites (Los 7 campos)
     entry_lim_izq.delete(0, "end")
     entry_lim_der.delete(0, "end")
     entry_existe.delete(0, "end")
     entry_f_a.delete(0, "end")
     entry_tipo_disc.delete(0, "end")
+    entry_continua.delete(0, "end")
+    entry_justificacion.delete(0, "end")
     
     limpiar_grafico()
 
@@ -393,4 +408,13 @@ btn_analizar.pack(side="left", expand=True, padx=5, pady=5)
 btn_limpiar = ctk.CTkButton(frame_botones, text="Limpiar Todo", fg_color="#555555", command=limpiar)
 btn_limpiar.pack(side="right", expand=True, padx=5, pady=5)
 
+def cerrar_aplicacion():
+    # Destruye la ventana de manera segura y detiene los hilos/tareas pendientes
+    app.quit()
+    app.destroy()
+
+# Indicarle a CustomTkinter que use nuestra función al presionar la 'X' de cerrar
+app.protocol("WM_DELETE_WINDOW", cerrar_aplicacion)
+
+# Lanzar la aplicación
 app.mainloop()

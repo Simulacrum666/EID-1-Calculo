@@ -69,11 +69,14 @@ class Elipse(Conica):
             ]
 
     def ecuacion_canonica(self):
-
-        return (
-            f"(x - {self.h})²/{self.a2} + "
-            f"(y - {self.k})²/{self.b2} = 1"
-        )
+        # Redondear el centro y los denominadores a 2 decimales
+        texto_h = f"- {self.h:.2f}" if self.h >= 0 else f"+ {abs(self.h):.2f}"
+        texto_k = f"- {self.k:.2f}" if self.k >= 0 else f"+ {abs(self.k):.2f}"
+        
+        parte_x = "x²" if self.h == 0 else f"(x {texto_h})²"
+        parte_y = "y²" if self.k == 0 else f"(y {texto_k})²"
+        
+        return f"{parte_x}/{self.a2:.2f} + {parte_y}/{self.b2:.2f} = 1"
 
     def obtener_vertices(self):
 

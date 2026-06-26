@@ -73,16 +73,16 @@ class Hiperbola(Conica):
             ]
 
     def ecuacion_canonica(self):
-        signo_h = f"- {abs(self.h)}" if self.h >= 0 else f"+ {abs(self.h)}"
-        signo_k = f"- {abs(self.k)}" if self.k >= 0 else f"+ {abs(self.k)}"
+        signo_h = f"- {abs(self.h):.2f}" if self.h >= 0 else f"+ {abs(self.h):.2f}"
+        signo_k = f"- {abs(self.k):.2f}" if self.k >= 0 else f"+ {abs(self.k):.2f}"
         
         parte_x = "x²" if self.h == 0 else f"(x {signo_h})²"
         parte_y = "y²" if self.k == 0 else f"(y {signo_k})²"
-
+        
         if self.orientacion == "Horizontal":
-            return f"{parte_x}/{self.a2} - {parte_y}/{self.b2} = 1"
+            return f"{parte_x}/{self.a2:.2f} - {parte_y}/{self.b2:.2f} = 1"
         else:
-            return f"{parte_y}/{self.a2} - {parte_x}/{self.b2} = 1"
+            return f"{parte_y}/{self.a2:.2f} - {parte_x}/{self.b2:.2f} = 1"
 
     def obtener_asintotas(self):
         

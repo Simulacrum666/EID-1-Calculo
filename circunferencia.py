@@ -37,13 +37,14 @@ class Circunferencia(Conica):
         self.r = sqrt_manual(self.r2)     #Radio
 
     def ecuacion_canonica(self):
-        signo_h = f"- {abs(self.h)}" if self.h >= 0 else f"+ {abs(self.h)}"
-        signo_k = f"- {abs(self.k)}" if self.k >= 0 else f"+ {abs(self.k)}"
+        # Usar :.2f para redondear a 2 decimales en el texto final
+        signo_h = f"- {abs(self.h):.2f}" if self.h >= 0 else f"+ {abs(self.h):.2f}"
+        signo_k = f"- {abs(self.k):.2f}" if self.k >= 0 else f"+ {abs(self.k):.2f}"
         
         parte_x = "x²" if self.h == 0 else f"(x {signo_h})²"
         parte_y = "y²" if self.k == 0 else f"(y {signo_k})²"
 
-        return f"{parte_x} + {parte_y} = {self.r2}"
+        return f"{parte_x} + {parte_y} = {self.r2:.2f}"
 
     def calcular_area(self):
         return PI * self.r2
