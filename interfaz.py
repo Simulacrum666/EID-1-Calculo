@@ -242,7 +242,8 @@ def graficar_conica(conica):
 
 def mostrar_info(conica):
     """Muestra el procedimiento completo: validación del RUT, construcción
-    de la ecuación general, ecuación general y ecuación canónica."""
+    de la ecuación general, ecuación general, transformación a la forma
+    canónica, procedimiento inverso, y ecuación canónica."""
     textbox.delete("0.0", "end")
 
     textbox.insert("end", "── Validación del RUT (Módulo 11) ──\n")
@@ -255,6 +256,15 @@ def mostrar_info(conica):
 
     textbox.insert("end", f"Tipo de Cónica: {conica.tipo}\n")
     textbox.insert("end", f"Ecuación General:\n {conica.ecuacion_general()}\n\n")
+
+    for paso in conica.pasos_transformacion:
+        textbox.insert("end", f"{paso}\n")
+    textbox.insert("end", "\n")
+
+    for paso in conica.pasos_inversa:
+        textbox.insert("end", f"{paso}\n")
+    textbox.insert("end", "\n")
+
     textbox.insert("end", f"Ecuación Canónica:\n {conica.ecuacion_canonica()}\n")
 
 # =========================================================

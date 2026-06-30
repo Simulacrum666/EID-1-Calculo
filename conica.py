@@ -109,3 +109,36 @@ class Conica:
             f"{self.D:.2f}y + "
             f"{self.E:.2f} = 0"
         )
+
+    def _pasos_inversa_segundo_grado(self, h, k, rhs):
+        """Procedimiento inverso compartido por Circunferencia, Elipse e
+        Hipérbola: las tres llegan a la forma intermedia
+        A(x-h)² + B(y-k)² = rhs antes de dividir para obtener la canónica.
+        Partiendo de esa forma, se reconstruyen C, D y E y se comparan
+        con los valores originales (Parábola no la usa: su estructura,
+        con un término lineal, es distinta)."""
+        pasos = []
+        pasos.append("• Partimos de la forma intermedia obtenida al completar cuadrados:")
+        pasos.append("  A(x - h)² + B(y - k)² = rhs")
+        pasos.append(f"  con h = {h:.2f}, k = {k:.2f}, rhs = {rhs:.2f}")
+        pasos.append("• Expandimos los cuadrados:")
+        pasos.append("  A·x² - 2A·h·x + A·h² + B·y² - 2B·k·y + B·k² = rhs")
+
+        C_rec = -2 * self.A * h
+        D_rec = -2 * self.B * k
+        E_rec = self.A * h * h + self.B * k * k - rhs
+
+        pasos.append("• Reagrupamos como ecuación general:")
+        pasos.append(
+            f"  {self.A:.2f}x² + {self.B:.2f}y² + ({C_rec:.2f})x + "
+            f"({D_rec:.2f})y + ({E_rec:.2f}) = 0"
+        )
+        pasos.append(
+            f"• Identificamos: C = -2Ah = {C_rec:.2f}, "
+            f"D = -2Bk = {D_rec:.2f}, E = Ah²+Bk²-rhs = {E_rec:.2f}"
+        )
+        pasos.append(
+            f"• Verificación: coinciden con los coeficientes originales "
+            f"(C = {self.C:.2f}, D = {self.D:.2f}, E = {self.E:.2f}) ✓"
+        )
+        return pasos

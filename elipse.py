@@ -39,6 +39,47 @@ class Elipse(Conica):
 
         self.a = sqrt_manual(self.a2)
         self.b = sqrt_manual(self.b2)
+        self.rhs = rhs  # Se guarda para reutilizar en el procedimiento paso a paso
+
+        self.calcular_focos()
+
+        self.pasos_transformacion = self._generar_pasos_transformacion()
+        self.pasos_inversa = self._generar_pasos_inversa()
+
+    def _generar_pasos_transformacion(self):
+        """Desarrollo paso a paso: ecuación general → forma canónica."""
+        pasos = ["--- TRANSFORMACIÓN: ECUACIÓN GENERAL → FORMA CANÓNICA ---"]
+        pasos.append("1. Ecuación general (criterio de Elipse: A y B mismo signo, A ≠ B):")
+        pasos.append(f"   {self.ecuacion_general()}")
+        pasos.append("2. Agrupamos y factorizamos A en x, B en y:")
+        pasos.append(
+            f"   {self.A:.2f}(x² + ({self.C:.2f}/{self.A:.2f})x) + "
+            f"{self.B:.2f}(y² + ({self.D:.2f}/{self.B:.2f})y) + {self.E:.2f} = 0"
+        )
+        pasos.append(f"3. h = -C/(2A) = {self.h:.2f};   k = -D/(2B) = {self.k:.2f}")
+        pasos.append(
+            f"4. Sustituyendo: A(x-h)² + B(y-k)² = A·h² + B·k² - E = {self.rhs:.2f}"
+        )
+        pasos.append("5. Dividimos toda la ecuación por rhs:")
+        pasos.append("   (x-h)²/(rhs/A) + (y-k)²/(rhs/B) = 1")
+        pasos.append(
+            f"6. a² = rhs/A = {self.rhs:.2f}/{self.A:.2f} = {self.a2:.2f};   "
+            f"b² = rhs/B = {self.rhs:.2f}/{self.B:.2f} = {self.b2:.2f}"
+        )
+        pasos.append(f"7. Ecuación canónica: {self.ecuacion_canonica()}")
+        return pasos
+
+    def _generar_pasos_inversa(self):
+        """Desarrollo paso a paso: forma canónica → ecuación general."""
+        pasos = ["--- PROCEDIMIENTO INVERSO: FORMA CANÓNICA → ECUACIÓN GENERAL ---"]
+        pasos.append(f"1. Partimos de la canónica: {self.ecuacion_canonica()}")
+        pasos.append(
+            "2. Multiplicamos toda la ecuación por rhs (el mismo valor usado "
+            "al construir a² y b², ya que A = rhs/a² y B = rhs/b²):"
+        )
+        pasos.append(f"   A(x-h)² + B(y-k)² = rhs = {self.rhs:.2f}")
+        pasos += self._pasos_inversa_segundo_grado(self.h, self.k, self.rhs)
+        return pasos
 
         self.calcular_focos()
 

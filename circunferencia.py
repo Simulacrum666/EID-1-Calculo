@@ -35,6 +35,50 @@ class Circunferencia(Conica):
             )
 
         self.r = sqrt_manual(self.r2)     #Radio
+        self.rhs = rhs  # Se guarda para reutilizar en el procedimiento paso a paso
+
+        self.pasos_transformacion = self._generar_pasos_transformacion()
+        self.pasos_inversa = self._generar_pasos_inversa()
+
+    def _generar_pasos_transformacion(self):
+        """Desarrollo paso a paso: ecuación general → forma canónica."""
+        pasos = ["--- TRANSFORMACIÓN: ECUACIÓN GENERAL → FORMA CANÓNICA ---"]
+        pasos.append(f"1. Ecuación general (criterio de Circunferencia: A = B = {self.A:.2f}):")
+        pasos.append(f"   {self.ecuacion_general()}")
+        pasos.append("2. Agrupamos y factorizamos A en los términos de x e y:")
+        pasos.append(
+            f"   {self.A:.2f}(x² + ({self.C:.2f}/{self.A:.2f})x) + "
+            f"{self.A:.2f}(y² + ({self.D:.2f}/{self.A:.2f})y) + {self.E:.2f} = 0"
+        )
+        pasos.append(
+            f"3. Completamos cuadrado en x: h = -C/(2A) = "
+            f"-({self.C:.2f})/(2×{self.A:.2f}) = {self.h:.2f}"
+        )
+        pasos.append(
+            f"4. Completamos cuadrado en y: k = -D/(2A) = "
+            f"-({self.D:.2f})/(2×{self.A:.2f}) = {self.k:.2f}"
+        )
+        pasos.append(
+            f"5. Sustituyendo: A(x-h)² + A(y-k)² = A·h² + A·k² - E = {self.rhs:.2f}"
+        )
+        pasos.append(
+            f"6. Dividimos por A: (x-h)² + (y-k)² = {self.rhs:.2f}/{self.A:.2f} "
+            f"= {self.r2:.2f} = r²"
+        )
+        pasos.append(f"7. Ecuación canónica: {self.ecuacion_canonica()}")
+        return pasos
+
+    def _generar_pasos_inversa(self):
+        """Desarrollo paso a paso: forma canónica → ecuación general."""
+        pasos = ["--- PROCEDIMIENTO INVERSO: FORMA CANÓNICA → ECUACIÓN GENERAL ---"]
+        pasos.append(f"1. Partimos de la canónica: {self.ecuacion_canonica()}")
+        pasos.append(
+            f"2. Multiplicamos por A = {self.A:.2f} (factor común, ya que A = B "
+            f"en la circunferencia, y r² = rhs/A):"
+        )
+        pasos.append(f"   A(x-h)² + A(y-k)² = A·r² = {self.rhs:.2f}  (rhs)")
+        pasos += self._pasos_inversa_segundo_grado(self.h, self.k, self.rhs)
+        return pasos
 
     def ecuacion_canonica(self):
         # Usar :.2f para redondear a 2 decimales en el texto final
