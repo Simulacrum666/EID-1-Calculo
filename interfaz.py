@@ -7,8 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
 from factory import crear_conica_desde_rut
-from utils import sin_manual, cos_manual, PI
 from limites import AnalizadorLimites
+from graficador import dibujar_conica  # Lógica de dibujo de cónicas, separada de la GUI
 
 # =========================================================
 # CONFIG
@@ -72,7 +72,7 @@ titulo_conicas.pack(pady=5)
 label_ecuaciones = ctk.CTkLabel(tab_conicas, text="Ecuaciones de la Cónica:", font=("Consolas", 11, "underline"))
 label_ecuaciones.pack(pady=(5, 0))
 
-textbox = ctk.CTkTextbox(tab_conicas, width=320, height=110, font=("Consolas", 11))
+textbox = ctk.CTkTextbox(tab_conicas, width=320, height=180, font=("Consolas", 11))
 textbox.pack(pady=5)
 
 # CAMPOS COMPLETAMENTE VACÍOS PARA LA DEFENSA DE CÓNICAS (Requerimiento PDF)
@@ -232,71 +232,27 @@ def limpiar_grafico():
 _ejes("Gráfico")
 
 # =========================================================
-# LÓGICA DE RE-DIBUJO DE CÓNICAS
+# GRAFICADO DE CÓNICAS (la lógica de dibujo vive en graficador.py)
 # =========================================================
 
 def graficar_conica(conica):
     ax.clear()
-    tipo = conica.tipo
-    pasos = 400
-
-    if tipo == "Circunferencia":
-        puntos_x, puntos_y = [], []
-        for i in range(pasos + 1):
-            t = 2 * PI * i / pasos
-            puntos_x.append(conica.h + conica.r * cos_manual(t))
-            puntos_y.append(conica.k + conica.r * sin_manual(t))
-        ax.plot(puntos_x, puntos_y, color="royalblue", linewidth=2, label="Circunferencia")
-        ax.scatter([conica.h], [conica.k], color="red", zorder=5, label="Centro")
-
-    elif tipo == "Elipse":
-        puntos_x, puntos_y = [], []
-        for i in range(pasos + 1):
-            t = 2 * PI * i / pasos
-            if conica.orientacion == "Horizontal":
-                puntos_x.append(conica.h + conica.a * cos_manual(t))
-                puntos_y.append(conica.k + conica.b * sin_manual(t))
-            else:
-                puntos_x.append(conica.h + conica.b * cos_manual(t))
-                puntos_y.append(conica.k + conica.a * sin_manual(t))
-        ax.plot(puntos_x, puntos_y, color="seagreen", linewidth=2, label="Elipse")
-        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
-
-    elif tipo == "Parabola":
-        if conica.orientacion == "Vertical":
-            xs = [conica.h - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
-            ys = [((x - conica.h)**2 / (4 * conica.p)) + conica.k for x in xs]
-        else:
-            ys = [conica.k - 10 + (i * 20 / pasos) for i in range(pasos + 1)]
-            xs = [((y - conica.k)**2 / (4 * conica.p)) + conica.h for y in ys]
-        ax.plot(xs, ys, color="darkorange", linewidth=2, label="Parábola")
-        ax.scatter([conica.vertice[0]], [conica.vertice[1]], color="red", zorder=5, label="Vértice")
-
-    elif tipo == "Hiperbola":
-        t_vals = [-2.5 + (i * 5 / pasos) for i in range(pasos + 1) if i != pasos//2]
-        for signo in [-1, 1]:
-            xs, ys = [], []
-            for t in t_vals:
-                import math
-                try:
-                    cosh_t = math.cosh(t)
-                    sinh_t = math.sinh(t)
-                    if conica.orientacion == "Horizontal":
-                        xs.append(conica.h + conica.a * cosh_t * signo)
-                        ys.append(conica.k + conica.b * sinh_t)
-                    else:
-                        xs.append(conica.h + conica.b * sinh_t)
-                        ys.append(conica.k + conica.a * cosh_t * signo)
-                except:
-                    continue
-            ax.plot(xs, ys, color="crimson", linewidth=2)
-        ax.scatter([conica.h], [conica.k], color="black", zorder=5, label="Centro")
-
-    _ejes(f"{tipo} — RUT: {conica.rut}")
+    dibujar_conica(ax, conica)
+    _ejes(f"{conica.tipo} — RUT: {conica.rut}")
 
 def mostrar_info(conica):
-    """Muestra exclusivamente los datos iniciales y ecuaciones requeridas."""
+    """Muestra el procedimiento completo: validación del RUT, construcción
+    de la ecuación general, ecuación general y ecuación canónica."""
     textbox.delete("0.0", "end")
+
+    textbox.insert("end", "── Validación del RUT (Módulo 11) ──\n")
+    for paso in conica.pasos_validacion:
+        textbox.insert("end", f" {paso}\n")
+    textbox.insert("end", "\n")
+
+    for paso in conica.pasos_construccion:
+        textbox.insert("end", f"{paso}\n")
+
     textbox.insert("end", f"Tipo de Cónica: {conica.tipo}\n")
     textbox.insert("end", f"Ecuación General:\n {conica.ecuacion_general()}\n\n")
     textbox.insert("end", f"Ecuación Canónica:\n {conica.ecuacion_canonica()}\n")
